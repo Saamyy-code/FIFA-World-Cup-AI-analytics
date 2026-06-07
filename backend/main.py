@@ -1,6 +1,16 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.ai.player_analysis import generate_analysis
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 players = {
     "mbappe": {
@@ -46,3 +56,15 @@ def get_player(player_name: str):
 @app.get("/players")
 def get_players():
     return list(players.keys())
+
+@app.get("/analysis/{player_name}")
+def player_analysis(player_name: str):
+
+    player = players.get(player_name.lower())
+
+    if not player:
+        return {"error": "Player not found"}
+
+    return {
+        "analysis": generate_analysis(player)
+    }
